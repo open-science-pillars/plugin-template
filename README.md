@@ -37,6 +37,3 @@ your-plugin/
 4. Knowledge bundles conform to SPEC §5; start from knowledge-template,
    which documents the frontmatter and the evidence rules.
 5. Every high-severity gotcha ships a matching eval case in `evals/`.
-
-Authored in Session 1 per SPECIFICATION.md v0.5.1 §0 and §6; see the
-example files for the annotated patterns.

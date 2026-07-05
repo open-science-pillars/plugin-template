@@ -2,7 +2,7 @@
 
 Empty conformant bundle: start from the knowledge-template repo, which
 carries one annotated example per concept type and the conformance walk
-(SPECIFICATION.md v0.5.1 §5). List every concept here as it lands; the
+(SPEC §5). List every concept here as it lands; the
 knowledge-linter flags concepts unreachable from index.md.
 
 - Snapshot source repository: (none; original bundle)
