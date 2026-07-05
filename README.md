@@ -25,7 +25,8 @@ your-plugin/
 ## The rules that gate a merge
 
 1. Every SKILL.md starts with frontmatter: `name`; `description` 200
-   characters or fewer, keyword-first. Knowledge skills set
+   characters or fewer, keyword-first (verify the loaded budget with
+   the /skills panel on Claude Code). Knowledge skills set
    `user-invocable: false`; workflow skills never set
    `disable-model-invocation: true` (it would kill conversational surfaces).
 2. Side effects (downloads, file writes) are guarded by in-skill
