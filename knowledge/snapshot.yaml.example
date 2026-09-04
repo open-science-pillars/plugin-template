@@ -1,0 +1,33 @@
+# Snapshot manifest (SPEC §5.7): how a plugin pins a copy of another
+# repository's bundle concepts.
+#
+# A plugin that ships a pinned copy of provider concepts renames this
+# file to knowledge/snapshot.yaml and fills it in. The canonical
+# repository's tools/sync_check.py verifies the copy against the pinned
+# commit (STALE, MISSING, EXTRA, DANGLING and PIN-DRIFT fail the gate;
+# BEHIND is informational) and refreshes it:
+#
+#   uv run tools/sync_check.py <plugin>/knowledge                     verify
+#   uv run tools/sync_check.py <plugin>/knowledge --refresh <commit>  refresh
+#
+# run from a clone of the source repository. A refresh pins a commit at
+# which the source bundle owes no signatures, normally the steward's
+# signing commit, and moves the pin lines in index.md with it.
+#
+# A plugin whose bundle is original (nothing copied from elsewhere)
+# keeps no manifest: delete this file and leave the index.md snapshot
+# lines at "(none; original bundle)".
+
+source:
+  repository: open-science-pillars/nasa-daac-knowledge
+  bundle: knowledge/podaac    # the bundle's path in that repository AT the pinned commit (it may have moved since)
+  commit: 9224fe5a83e4        # the pinned commit, normally the steward's signing commit
+  date: 2026-09-03            # that commit's date
+copy_dir: snapshot-podaac     # relative to knowledge/; "." puts the copies beside the local concepts
+scope:                        # exactly one of include or exclude; the bundle's own index.md and log.md are never in scope
+  include:                    # explicit files, or directories with a trailing slash
+    - datasets/grace-fo-mascons.md
+    - gotchas/grace-gia-correction.md
+    - gotchas/grace-coastal-leakage.md   # linked from the dataset concept; a link out of scope is DANGLING
+  # exclude:                  # the other form: every file in the bundle except these
+  #   - tutorial/
