@@ -12,6 +12,7 @@ dependency).
 ```
 your-plugin/
 ├── .claude-plugin/plugin.json    # name, version, description, dependencies, license
+├── .github/workflows/plugin-gate.yml  # the merge gate below, as CI; rename the tag pattern
 ├── README.md · LICENSE · CITATION.cff
 ├── CONNECTORS.md                 # network disclosure; shared text + per-plugin table
 ├── skills/
@@ -59,6 +60,12 @@ What the non-obvious files are for:
   documented once in marketplace/docs/eval-authoring-guide.md.
 
 ## The rules that gate a merge
+
+`.github/workflows/plugin-gate.yml` runs rules 1, 3 (the PEP 723
+header check), 4 and the signature-debt measure on every pull request
+and on main, and enforces zero debt on a release tag; a plugin copied
+from this template is gated from its first pull request. The one edit
+it needs is the tag pattern, `{plugin-name}--v*`.
 
 1. Every SKILL.md starts with frontmatter: `name`; `description` 200
    characters or fewer, keyword-first (verify the loaded budget with
