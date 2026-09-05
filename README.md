@@ -62,8 +62,9 @@ What the non-obvious files are for:
 ## The rules that gate a merge
 
 `.github/workflows/plugin-gate.yml` runs rules 1, 3 (the PEP 723
-header check), 4 and the signature-debt measure on every pull request
-and on main, and enforces zero debt on a release tag; a plugin copied
+header check), 4, the wording check (specification rules cited by
+name, no program bookkeeping, no em or en dashes) and the
+signature-debt measure on every pull request and on main, and enforces zero debt on a release tag; a plugin copied
 from this template is gated from its first pull request. The one edit
 it needs is the tag pattern, `{plugin-name}--v*`.
 
