@@ -12,19 +12,19 @@ repos; core is a peer install, never a file dependency).
 your-plugin/
 ├── .claude-plugin/plugin.json    # name, version, description, license
 ├── README.md · LICENSE · CITATION.cff
-├── CONNECTORS.md                 # network disclosure (SPEC §5.9); shared text + per-plugin table
+├── CONNECTORS.md                 # network disclosure; shared text + per-plugin table
 ├── skills/
 │   └── example-workflow/SKILL.md # annotated example; replace it
-├── agents/                       # subagents, one directory each (SPEC §4.5)
+├── agents/                       # subagents, one directory each
 │   ├── example-scout/agent.md    # read-only planner skeleton; replace it
 │   └── example-reviewer/agent.md # propose-never-modify auditor skeleton; replace it
 ├── knowledge/                    # OKF bundle (start from knowledge-template)
 │   ├── index.md · log.md
-│   └── snapshot.yaml.example     # manifest for a pinned provider copy (SPEC §5.7)
-├── verification/                 # marimo golden notebooks (SPEC §6)
+│   └── snapshot.yaml.example     # manifest for a pinned provider copy
+├── verification/                 # marimo golden notebooks
 │   ├── example_workflow.py       # trivial green notebook; the pattern to copy
 │   └── fixtures/                 # small fixed inputs + provenance README
-└── evals/                        # eval cases (SPEC §8), added with your gotchas
+└── evals/                        # eval cases, added with your gotchas
     └── SCHEMA.md                 # pointer to the case schema's one home
 ```
 
@@ -65,6 +65,8 @@ What the non-obvious files are for:
 3. A workflow skill that encodes a computation is not done until its golden
    notebook in `verification/` runs green headless
    (`python verification/your_workflow.py`, nonzero exit on failure).
-4. Knowledge bundles conform to SPEC §5; start from knowledge-template,
-   which documents the frontmatter and the evidence rules.
+4. Knowledge bundles conform to the specification's knowledge-layer
+   rules (docs/SPECIFICATION.md in open-science-pillars/marketplace);
+   start from knowledge-template, which documents the frontmatter and
+   the evidence rules.
 5. Every high-severity gotcha ships a matching eval case in `evals/`.

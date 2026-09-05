@@ -12,7 +12,7 @@ shape. The shape is what the org's rules check.
 
 `name` plus a `description` of 200 characters or fewer, keyword-first: the
 description is what surfaces match a user's request against, and skill
-descriptions share a context budget (SPEC §0.3), so front-load the words a
+descriptions share a context budget, so front-load the words a
 scientist would actually use. Workflow skills leave both invocation paths
 open: a user can invoke `/your-plugin:example-workflow` on Claude Code or
 just describe the task conversationally on any surface. Never set
@@ -24,7 +24,7 @@ just describe the task conversationally on any surface. Never set
    the plugin's knowledge bundle for concepts about the target dataset;
    surface applicable gotchas before computing.
 2. Compute. Declare compute needs rather than assuming a terminal: small
-   (laptop), medium (Dask), large (HPC) per SPEC §0.4.
+   (laptop), medium (Dask), large (HPC).
 3. **Confirmation gate (the pattern that matters):** before any side effect
    (writing a file, downloading data above the volume threshold), show what
    will happen (filename, size, destination) and wait for an explicit yes.
@@ -36,7 +36,7 @@ just describe the task conversationally on any surface. Never set
 
 - Write or download anything before the gate.
 - Present a headline number without uncertainty framing.
-- Reference files outside this plugin's directory (self-containment, §0.5).
+- Reference files outside this plugin's directory (self-containment).
 
 ## Verification
 
