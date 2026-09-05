@@ -27,9 +27,9 @@ def _():
 
 @app.cell
 def _(np):
-    # Synthesize a tiny deterministic fixture in-notebook (SPEC §6 allows
-    # in-notebook synthesis for small inputs; larger fixtures live in
-    # verification/fixtures/ with a provenance README).
+    # Synthesize a tiny deterministic fixture in-notebook (the fixtures
+    # policy allows in-notebook synthesis for small inputs; larger
+    # fixtures live in verification/fixtures/ with a provenance README).
     rng = np.random.default_rng(seed=42)
     series = rng.normal(loc=1.0, scale=0.1, size=240)
     return (series,)

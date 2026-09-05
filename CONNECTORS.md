@@ -5,7 +5,8 @@ when it does, and what happens when it cannot. This file is the
 disclosure; `.mcp.json` is the wire.
 
 The sections up to "Registered servers" are shared text: they state the
-connector rules every plugin in the org follows (SPEC §5.9) and are
+connector rules every plugin in the org follows (the specification,
+docs/SPECIFICATION.md in open-science-pillars/marketplace) and are
 kept as they are. The per-plugin block at the end is where this
 plugin's own servers are listed; a plugin that registers no server
 keeps the shared text and says so there.
@@ -33,7 +34,7 @@ availability or evolution.
 **Discovery never outranks signed knowledge.** An interactive catalog
 result may inform drafting and cross-checks, but a bundle claim (a
 schema row, a ShortName, a caveat) changes only through the concept
-lifecycle (SPEC §5.6) with its own verification.
+lifecycle with its own verification.
 
 ## What leaves your machine
 
@@ -50,7 +51,7 @@ cannot block a download.
 A login is needed only where retrieval requires one, never to search.
 It is read by the loading library at retrieval time and is never
 handled by this plugin, never sent to a connector, and never stored in
-this repository in any form (SPEC §5.8).
+this repository in any form.
 
 ## When a connector is unavailable
 

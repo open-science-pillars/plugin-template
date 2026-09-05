@@ -1,5 +1,5 @@
-# Snapshot manifest (SPEC §5.7): how a plugin pins a copy of another
-# repository's bundle concepts.
+# Snapshot manifest (the specification's distribution rules): how a
+# plugin pins a copy of another repository's bundle concepts.
 #
 # A plugin that ships a pinned copy of provider concepts renames this
 # file to knowledge/snapshot.yaml and fills it in. The canonical

@@ -6,7 +6,7 @@ okf_version: "0.2"
 
 Empty conformant bundle: start from the knowledge-template repo, which
 carries one annotated example per concept type under knowledge/ and
-the conformance walk (SPEC §5). OKF v0.2 conformant (okf_version "0.2"
+the conformance walk. OKF v0.2 conformant (okf_version "0.2"
 above). List every concept here as it lands; the
 knowledge-linter flags concepts unreachable from index.md.
 
