@@ -11,10 +11,12 @@ dependency).
 
 ```
 your-plugin/
-├── .claude-plugin/plugin.json    # name, version, description, dependencies, license
+├── .claude-plugin/plugin.json    # the Claude projection, rendered from .osp/package.yaml
+├── plugin.json                   # the Agent Plugins 1.0.0 projection, rendered likewise
 ├── .osp/                         # canonical metadata (build-kit/docs/osp-metadata.md):
 │   ├── repository.yaml           #   kind, status, spheres, discipline; rename before it validates
-│   ├── package.yaml              #   name, version, dependencies; plugin.json must agree with it
+│   ├── package.yaml              #   name, version, dependencies, metadata, reach; both manifests render from it
+│   ├── release-lock.json         #   digests of one release, written by osp.py lock
 │   ├── surfaces.yaml             #   runtime support policy and the qualification a release needs
 │   └── governance.yaml           #   maintainers, runtime maintainers, review policy
 ├── .github/workflows/plugin-gate.yml  # the merge gate below, as CI; rename the tag pattern
@@ -41,10 +43,12 @@ What the non-obvious files are for:
   names the repository, its kind (`capability` for a domain plugin),
   its status and the sphere and discipline it serves; a copy of this
   template fails `osp.py validate` until `repository.name` is changed
-  from `plugin-template`. `package.yaml` carries the name, version and
-  dependencies that `.claude-plugin/plugin.json` must repeat exactly:
-  the manifest is a projection and the gate fails when they disagree.
-  `surfaces.yaml` says which runtimes a release must qualify on.
+  from `plugin-template`. `package.yaml` carries the name, version,
+  dependencies, presentation metadata and REACH declarations; the Claude
+  manifest and `.mcp.json`, and the Agent Plugins `plugin.json` and
+  `mcp.json`, are rendered from it (`uv run ../build-kit/scripts/osp.py
+  render .` after an edit) and the gate fails on a hand edit to any of
+  them. `surfaces.yaml` says which runtimes a release must qualify on.
 - `CONNECTORS.md` discloses what the plugin reaches over the network.
   The text above its "Registered servers" section is shared across the
   org and stays as written; the table under it is the per-plugin part.
@@ -58,11 +62,12 @@ What the non-obvious files are for:
   a reviewer. Both skeletons consult the bundle through the core skill
   `consult-knowledge` by name rather than restating how; a reviewer
   proposes and never modifies. Placeholders are in angle brackets.
-- `dependencies` in `plugin.json` is how a plugin reaches knowledge it
+- `dependencies` in `package.yaml` is how a plugin reaches knowledge it
   does not own. Every plugin declares `core`; a plugin that consults a
   provider bundle (the PO.DAAC bundle in nasa-daac-knowledge, for
   example) adds that repository with a version floor,
-  `{ "name": "nasa-daac-knowledge", "version": ">=2026.9.2" }`, and
+  `{name: nasa-daac-knowledge, version: ">=2026.9.2"}` under
+  `dependencies.knowledge`, and
   the installer installs and updates it alongside the plugin. Nothing
   is copied: skills and agents cite a provider concept by bundle path
   (`knowledge/podaac/<type>/<concept>.md`) and the core skill

@@ -1,7 +1,7 @@
-# Package identity, content and declared dependencies (ADR B). Replace
-# your-plugin-name with the repository name and keep the version, name and
-# dependencies identical to .claude-plugin/plugin.json: the manifest is a
-# projection of this file and the gate fails when the two disagree.
+# Package identity, content, dependencies, presentation metadata and REACH
+# (ADR B). The Claude package files and the Agent Plugins package are
+# rendered from this file by build-kit's osp.py render; the gate fails on
+# a hand edit to any of them.
 schema_version: 1
 package:
   name: your-plugin-name
@@ -15,5 +15,12 @@ content:
   evals: ./evals
 dependencies:
   capabilities:
-    - name: core
+  - name: core
   knowledge: []
+metadata:
+  description: 'Replace: one sentence, keyword-first, what domain and datasets this plugin covers.'
+  keywords:
+  - replace
+  - with
+  - domain
+  - keywords
