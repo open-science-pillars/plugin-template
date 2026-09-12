@@ -12,6 +12,11 @@ dependency).
 ```
 your-plugin/
 ├── .claude-plugin/plugin.json    # name, version, description, dependencies, license
+├── .osp/                         # canonical metadata (build-kit/docs/osp-metadata.md):
+│   ├── repository.yaml           #   kind, status, spheres, discipline; rename before it validates
+│   ├── package.yaml              #   name, version, dependencies; plugin.json must agree with it
+│   ├── surfaces.yaml             #   runtime support policy and the qualification a release needs
+│   └── governance.yaml           #   maintainers, runtime maintainers, review policy
 ├── .github/workflows/plugin-gate.yml  # the merge gate below, as CI; rename the tag pattern
 ├── README.md · LICENSE · CITATION.cff
 ├── CONNECTORS.md                 # network disclosure; shared text + per-plugin table
@@ -31,6 +36,15 @@ your-plugin/
 
 What the non-obvious files are for:
 
+- `.osp/` is the canonical metadata the projections are rendered from
+  (ADR A and ADR B in marketplace docs/decisions). `repository.yaml`
+  names the repository, its kind (`capability` for a domain plugin),
+  its status and the sphere and discipline it serves; a copy of this
+  template fails `osp.py validate` until `repository.name` is changed
+  from `plugin-template`. `package.yaml` carries the name, version and
+  dependencies that `.claude-plugin/plugin.json` must repeat exactly:
+  the manifest is a projection and the gate fails when they disagree.
+  `surfaces.yaml` says which runtimes a release must qualify on.
 - `CONNECTORS.md` discloses what the plugin reaches over the network.
   The text above its "Registered servers" section is shared across the
   org and stays as written; the table under it is the per-plugin part.
