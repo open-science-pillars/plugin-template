@@ -1,0 +1,23 @@
+# Runtime support policy (ADR B). `required` is what a release must qualify
+# on before it advertises the surface; `status` is the evidence today. A new
+# capability starts with the Claude Code evidence it has and nothing more.
+schema_version: 1
+surfaces:
+  claude-code:
+    role: [development, runtime]
+    required: true
+    status: supported
+  claude-cowork:
+    role: runtime
+    required: true
+    status: planned
+  openai-codex:
+    role: runtime
+    required: true
+    status: planned
+  claude-science:
+    role: future-runtime
+    required: false
+    status: limited-release
+qualification:
+  require: [install, skill-discovery, skill-invocation, knowledge-resolution, dependency-resolution, golden-computation, prove, receipt, release-lock]
