@@ -109,7 +109,11 @@ Which runtimes a release is qualified on is the table below, rendered by
 build-kit's `osp.py advertise --into README.md` from `.osp/surfaces.yaml`
 and the qualification records under `.osp/qualification/`; the gate fails
 when it is out of date or when a runtime is advertised as supported with
-no qualified record for the release.
+no qualified record for the release. A pull request that changes the
+package version, or carries the `release` label, is a release candidate:
+one ticket opens per required runtime, and the merge waits on a record or
+a waiver for each (the release qualification guide in the marketplace
+repository).
 
 <!-- osp-runtimes:start -->
 Runtime support for your-plugin-name 0.1.0 (release lock `sha256:d579855e2d22`), rendered by build-kit's `osp.py advertise` from `.osp/surfaces.yaml` and the qualification records; edit those, not this block.
