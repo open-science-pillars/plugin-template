@@ -2,9 +2,18 @@
   "name": "your-plugin-name",
   "version": "0.1.0",
   "description": "Replace: one sentence, keyword-first, what domain and datasets this plugin covers.",
-  "dependencies": ["core"],
-  "author": { "name": "Open Science Pillars Community" },
+  "dependencies": [
+    "core"
+  ],
+  "author": {
+    "name": "Open Science Pillars Community"
+  },
   "homepage": "https://github.com/open-science-pillars/your-plugin-name",
   "license": "Apache-2.0",
-  "keywords": ["replace", "with", "domain", "keywords"]
+  "keywords": [
+    "replace",
+    "with",
+    "domain",
+    "keywords"
+  ]
 }

@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "package": "your-plugin-name",
+  "version": "0.1.0",
+  "package_type": "capability",
+  "agent_plugins_spec": "1.0.0",
+  "repository_classification_digest": "sha256:5216823a9ccbb697f338a39517656c55077015224ec0d7b77a797c1cfbf7161b",
+  "dependencies": {
+    "capabilities": {
+      "core": null
+    },
+    "knowledge": {}
+  },
+  "agents_digest": "sha256:249026255f5b05efcdbd920bedb1854dee8008115e58b3e44fe8035b2394f2ab",
+  "evals_digest": "sha256:54d4d52d88102961b841c81a01abe37b6f82d3ae519a937574fc15548a1e89d9",
+  "knowledge_digest": "sha256:b087fd216be816fdd2236ab6f875486ac9f27095e1f671d988a08aa7e46fe512",
+  "skills_digest": "sha256:64ac9b99b229fe51a6a1ca4208b8517c307362743ed4171e3fe78ca2b6a19b70",
+  "verification_digest": "sha256:436e83d83f8f33f56afba668e5a56544f1317830e30ccd4e85bf93bee37d0a95",
+  "adapters": {
+    "claude": "sha256:02651c5ea7eabf7ef2cb255d12e291d03934fd80783cc0bf821194aa604afc03",
+    "agent-plugins": "sha256:2012206712b0abef60063c51815b9e1ac3e2032519bad950a2c6f766d61339b0"
+  }
+}
