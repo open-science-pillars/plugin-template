@@ -102,3 +102,24 @@ it needs is the tag pattern, `{plugin-name}--v*`.
    start from knowledge-template, which documents the frontmatter and
    the evidence rules.
 5. Every high-severity gotcha ships a matching eval case in `evals/`.
+
+## Runtimes
+
+Which runtimes a release is qualified on is the table below, rendered by
+build-kit's `osp.py advertise --into README.md` from `.osp/surfaces.yaml`
+and the qualification records under `.osp/qualification/`; the gate fails
+when it is out of date or when a runtime is advertised as supported with
+no qualified record for the release.
+
+<!-- osp-runtimes:start -->
+Runtime support for your-plugin-name 0.1.0 (release lock `sha256:d579855e2d22`), rendered by build-kit's `osp.py advertise` from `.osp/surfaces.yaml` and the qualification records; edit those, not this block.
+
+| Runtime | Role | Declared status | Qualification |
+|---|---|---|---|
+| Claude Code | development and runtime, required | supported | Supported (development environment) |
+| Claude Cowork | runtime, required | planned | Not qualified |
+| OpenAI Codex | runtime, required | planned | Not qualified |
+| Claude Science | future runtime | limited-release | Outside the required matrix |
+
+A runtime is advertised as supported only on a qualified record for this exact release; a release stays valid when a runtime is not qualified, and that runtime is simply not advertised.
+<!-- osp-runtimes:end -->
