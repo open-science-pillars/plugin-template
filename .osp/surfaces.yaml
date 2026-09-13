@@ -20,4 +20,4 @@ surfaces:
     required: false
     status: limited-release
 qualification:
-  require: [install, skill-discovery, skill-invocation, knowledge-resolution, dependency-resolution, golden-computation, prove, receipt, release-lock]
+  require: [install, skill-discovery, skill-invocation, knowledge-resolution, dependency-resolution, connector-invocation, side-effect-confirmation, golden-computation, prove, receipt, release-lock]

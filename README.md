@@ -1,27 +1,85 @@
 # plugin-template
 
-The scaffold for new Open Science Pillars domain plugins. Copy it, rename,
-and replace the examples. Skills-only structure: there is NO `commands/`
-directory anywhere in this org (everything is a skill; skills unification
-of 2026-01-24), and plugins are self-contained (no `../` paths to other
-repos; core is a declared dependency in `plugin.json`, never a file
-dependency).
+The scaffold for a new Open Science Pillars capability: copy it, rename
+it, replace the examples, and the gate runs on your first pull request.
+The walkthrough with measured timings is
+[Tutorial 3, Build a Domain Plugin](https://github.com/open-science-pillars/tutorials/blob/main/tutorial-3-build-a-plugin.qmd)
+in the tutorials repository (12.3 minutes scaffold-to-installed); what
+every file under `.osp/` means, and how a dependency, a connector or a
+PROVE requirement is declared, is the marketplace repository's
+[package authoring guide](https://github.com/open-science-pillars/marketplace/blob/main/docs/package-authoring-guide.md).
+The words used on this page (capability, plugin, package, sphere,
+knowledge bundle, runtime) are defined in the
+[glossary](https://github.com/open-science-pillars/marketplace/blob/main/GLOSSARY.md).
+
+## From copy to gated
+
+1. **Copy the repository.** Create the new repository from this one (a
+   template copy or a clone with the history dropped) in a workspace
+   that also holds a checkout of
+   [build-kit](https://github.com/open-science-pillars/build-kit) and
+   [nasa-daac-knowledge](https://github.com/open-science-pillars/nasa-daac-knowledge)
+   beside it, the way the gate lays them out.
+2. **Rename.** Set `repository.name` in `.osp/repository.yaml` (a copy
+   fails `osp.py validate` until it is no longer `plugin-template`) and,
+   for a domain capability, set `kind` to `capability` there with its
+   sphere and discipline; set the package
+   `name`, `description` and `keywords` in `.osp/package.yaml`; rename
+   the release tag pattern in `.github/workflows/plugin-gate.yml` to
+   `<plugin-name>--v*`; and put the plugin's name at the top of
+   `CONNECTORS.md`.
+3. **Delete the examples** once you have real ones: the example skill
+   (`skills/example-workflow/`), the two example agents
+   (`agents/example-scout/`, `agents/example-reviewer/`) and the example
+   golden notebook (`verification/example_workflow.py`). The knowledge
+   bundle starts empty (its concepts come from
+   [knowledge-template](https://github.com/open-science-pillars/knowledge-template))
+   and `evals/` holds only the pointer to the case schema; the first
+   high-severity gotcha you write brings the first eval case with it.
+4. **Validate and render.** From the repository root:
+   `uv run ../build-kit/scripts/osp.py validate . && uv run ../build-kit/scripts/osp.py render .`
+   The second command writes the Claude manifest and `.mcp.json` and
+   the Agent Plugins `plugin.json` and `mcp.json` from
+   `.osp/package.yaml`; never edit those four by hand, the gate fails
+   on a hand edit.
+5. **Open the first pull request.** `.github/workflows/plugin-gate.yml`
+   runs on every pull request and on main: the manifest validates
+   (`claude plugin validate`), the canonical metadata validates and the
+   projections are current (`osp.py validate`, `osp.py render --check`),
+   the portable package conforms to Agent Plugins 1.0.0
+   (`osp.py plugin-check`), the README's runtime table is current and no
+   runtime is advertised without a qualified record (`osp.py advertise
+   --check`), the release lock is reported, the bundle conforms to OKF
+   v0.2 (`check_okf_v02.py`), every script's PEP 723 header covers what
+   it imports (`check_script_deps.py`), the wording rules hold
+   (`check_prose.py`: specification rules cited by name, no program
+   bookkeeping, no em or en dashes) and the signature debt is reported
+   (`signature_check.py`); a release tag enforces the lock and zero
+   debt. `.github/workflows/release-qualification.yml` treats a pull
+   request that changes the package version, or carries the `release`
+   label, as a release candidate: one ticket opens per required runtime
+   and the merge waits on a qualification record or a waiver for each
+   (the marketplace repository's
+   [release qualification guide](https://github.com/open-science-pillars/marketplace/blob/main/docs/release-qualification-guide.md)).
 
 ## Layout
 
 ```
 your-plugin/
 ├── .claude-plugin/plugin.json    # the Claude projection, rendered from .osp/package.yaml
-├── plugin.json                   # the Agent Plugins 1.0.0 projection, rendered likewise
-├── .osp/                         # canonical metadata (build-kit/docs/osp-metadata.md):
-│   ├── repository.yaml           #   kind, status, spheres, discipline; rename before it validates
-│   ├── package.yaml              #   name, version, dependencies, metadata, reach; both manifests render from it
+├── .mcp.json                     # the Claude connector wire, rendered likewise (when reach is declared)
+├── plugin.json · mcp.json        # the Agent Plugins 1.0.0 projection, rendered likewise
+├── .osp/                         # canonical metadata (the package authoring guide):
+│   ├── repository.yaml           #   kind, status, spheres, discipline
+│   ├── package.yaml              #   name, version, dependencies, metadata, reach
 │   ├── release-lock.json         #   digests of one release, written by osp.py lock
 │   ├── surfaces.yaml             #   runtime support policy and the qualification a release needs
 │   └── governance.yaml           #   maintainers, runtime maintainers, review policy
-├── .github/workflows/plugin-gate.yml  # the merge gate below, as CI; rename the tag pattern
+├── .github/workflows/
+│   ├── plugin-gate.yml           # the merge gate, as CI; rename the tag pattern
+│   └── release-qualification.yml # tickets per required runtime on a release candidate
 ├── README.md · LICENSE · CITATION.cff
-├── CONNECTORS.md                 # network disclosure; shared text + per-plugin table
+├── CONNECTORS.md                 # network disclosure; shared text plus the per-plugin table
 ├── skills/
 │   └── example-workflow/SKILL.md # annotated example; replace it
 ├── agents/                       # subagents, one directory each
@@ -31,89 +89,84 @@ your-plugin/
 │   └── index.md · log.md
 ├── verification/                 # marimo golden notebooks
 │   ├── example_workflow.py       # trivial green notebook; the pattern to copy
-│   └── fixtures/                 # small fixed inputs + provenance README
+│   └── fixtures/                 # small fixed inputs plus the provenance README
 └── evals/                        # eval cases, added with your gotchas
+    ├── README.md                 # what lives here and where the format is defined
     └── SCHEMA.md                 # pointer to the case schema's one home
 ```
 
-What the non-obvious files are for:
-
-- `.osp/` is the canonical metadata the projections are rendered from
-  (ADR A and ADR B in marketplace docs/decisions). `repository.yaml`
-  names the repository, its kind (`capability` for a domain plugin),
-  its status and the sphere and discipline it serves; a copy of this
-  template fails `osp.py validate` until `repository.name` is changed
-  from `plugin-template`. `package.yaml` carries the name, version,
-  dependencies, presentation metadata and REACH declarations; the Claude
-  manifest and `.mcp.json`, and the Agent Plugins `plugin.json` and
-  `mcp.json`, are rendered from it (`uv run ../build-kit/scripts/osp.py
-  render .` after an edit) and the gate fails on a hand edit to any of
-  them. `surfaces.yaml` says which runtimes a release must qualify on.
-- `CONNECTORS.md` discloses what the plugin reaches over the network.
-  The text above its "Registered servers" section is shared across the
-  org and stays as written; the table under it is the per-plugin part.
-  Facts about a service (endpoint, transport, tool surface, auth
-  boundary) live in a `connector` concept in the bundle, and the table
-  only summarizes them. A plugin with no `.mcp.json` says so in the
-  table's place.
-- `agents/<name>/agent.md` is the subagent shape: frontmatter `name`,
-  `description`, `tools`; then Input, Behavior, Output and Must NOT for
-  a planner, or Knowledge first, Input, Checks in order and Must NOT for
-  a reviewer. Both skeletons consult the bundle through the core skill
-  `consult-knowledge` by name rather than restating how; a reviewer
-  proposes and never modifies. Placeholders are in angle brackets.
-- `dependencies` in `package.yaml` is how a plugin reaches knowledge it
-  does not own. Every plugin declares `core`; a plugin that consults a
-  provider bundle (the PO.DAAC bundle in nasa-daac-knowledge, for
-  example) adds that repository with a version floor,
-  `{name: nasa-daac-knowledge, version: ">=2026.9.2"}` under
-  `dependencies.knowledge`, and
-  the installer installs and updates it alongside the plugin. Nothing
-  is copied: skills and agents cite a provider concept by bundle path
-  (`knowledge/podaac/<type>/<concept>.md`) and the core skill
-  `consult-knowledge` finds every installed bundle through the
-  installer's record. `knowledge/index.md` names each declared bundle
-  under its own heading (the specification's canonical-home rule:
-  the provider concept wins on conflict, `stable` outranks `draft`).
-- `evals/SCHEMA.md` is a pointer, not a schema: the case format is
-  documented once in marketplace/docs/eval-authoring-guide.md.
-
 ## The rules that gate a merge
 
-`.github/workflows/plugin-gate.yml` runs rules 1, 3 (the PEP 723
-header check), 4, the wording check (specification rules cited by
-name, no program bookkeeping, no em or en dashes) and the
-signature-debt measure on every pull request and on main, and enforces zero debt on a release tag; a plugin copied
-from this template is gated from its first pull request. The one edit
-it needs is the tag pattern, `{plugin-name}--v*`.
-
-1. Every SKILL.md starts with frontmatter: `name`; `description` 200
+1. Every `SKILL.md` starts with frontmatter: `name`; `description` 200
    characters or fewer, keyword-first (verify the loaded budget with
-   the /skills panel on Claude Code). Knowledge skills set
+   the skills panel on Claude Code). Knowledge skills set
    `user-invocable: false`; workflow skills never set
-   `disable-model-invocation: true` (it would kill conversational surfaces).
+   `disable-model-invocation: true` (it would kill conversational
+   runtimes).
 2. Side effects (downloads, file writes) are guarded by in-skill
-   confirmation gates, in the skill body, so they work on every surface.
-3. A workflow skill that encodes a computation is not done until its golden
-   notebook in `verification/` runs green headless
-   (`python verification/your_workflow.py`, nonzero exit on failure).
+   confirmation gates, in the skill body, so they work on every runtime.
+3. A workflow skill that encodes a computation is not done until its
+   golden notebook in `verification/` runs green headless
+   (`uv run verification/your_workflow.py`, nonzero exit on failure;
+   the PEP 723 header at the top of the file is what makes that resolve
+   on any machine).
 4. Knowledge bundles conform to the specification's knowledge-layer
    rules (docs/SPECIFICATION.md in open-science-pillars/marketplace);
-   start from knowledge-template, which documents the frontmatter and
-   the evidence rules.
-5. Every high-severity gotcha ships a matching eval case in `evals/`.
+   start from knowledge-template, which carries an annotated example per
+   concept type.
+5. Every high-severity gotcha ships a matching eval case in `evals/`;
+   the case format is the marketplace repository's
+   [docs/testing.md](https://github.com/open-science-pillars/marketplace/blob/main/docs/testing.md).
+
+The sections below are the README your capability ships. Keep their
+order (it is the one every capability in the organization uses),
+replace every `<placeholder>`, and leave the runtime table to the tool
+that renders it.
+
+# <plugin-name>
+
+<One paragraph for a scientist, in plain words: what you can do with
+this capability, with no organization vocabulary before a concrete
+sentence.> It is a <Sphere> capability, discipline <Discipline>
+(`kind: capability` in `.osp/repository.yaml`); the words used on this page
+(capability, plugin, sphere, knowledge bundle, runtime) are defined in
+the
+[glossary](https://github.com/open-science-pillars/marketplace/blob/main/GLOSSARY.md).
+
+## Install
+
+On Claude Code:
+
+```bash
+claude plugin marketplace add open-science-pillars/marketplace
+claude plugin install <plugin-name>@open-science-pillars
+```
+
+What comes with it: `core` <and any knowledge dependency, by name>,
+declared as dependencies, so the one install brings them with it. An
+install stays at the release it was installed from:
+`claude plugin update <plugin-name>@open-science-pillars` moves this
+plugin and only this plugin; a dependency moves by its own update
+command, and a release that raises a floor says so in its notes.
+`claude plugin list` shows what you have.
+
+On Claude Cowork: add the marketplace by repository
+(`open-science-pillars/marketplace`) under Customize > Plugins > Add
+marketplace, then install the same capability from it; the shell
+commands on this page are for Claude Code.
+
+Local requirements: [uv](https://docs.astral.sh/uv/getting-started/installation/).
+Every script here declares its dependencies in a PEP 723 header and runs
+as `uv run <script>`; never `python script.py`. <Which credential
+retrieval needs (an Earthdata Login, a service key), which archives need
+a further authorization on the account, and that searching needs none.>
 
 ## Runtimes
 
-Which runtimes a release is qualified on is the table below, rendered by
-build-kit's `osp.py advertise --into README.md` from `.osp/surfaces.yaml`
-and the qualification records under `.osp/qualification/`; the gate fails
-when it is out of date or when a runtime is advertised as supported with
-no qualified record for the release. A pull request that changes the
-package version, or carries the `release` label, is a release candidate:
-one ticket opens per required runtime, and the merge waits on a record or
-a waiver for each (the release qualification guide in the marketplace
-repository).
+Which runtimes this release is qualified on is the table below, rendered
+from the qualification records; what each word asserts is in the
+marketplace repository's
+[docs/runtime-distribution.md](https://github.com/open-science-pillars/marketplace/blob/main/docs/runtime-distribution.md).
 
 <!-- osp-runtimes:start -->
 Runtime support for your-plugin-name 0.1.0 (release lock `sha256:d579855e2d22`), rendered by build-kit's `osp.py advertise` from `.osp/surfaces.yaml` and the qualification records; edit those, not this block.
@@ -127,3 +180,41 @@ Runtime support for your-plugin-name 0.1.0 (release lock `sha256:d579855e2d22`),
 
 A runtime is advertised as supported only on a qualified record for this exact release; a release stays valid when a runtime is not qualified, and that runtime is simply not advertised.
 <!-- osp-runtimes:end -->
+
+## First result
+
+<Link `tutorials/quickstart.md` in this repository, with its measured
+time and what it assumes; then the timed tutorial in the tutorials
+repository for the long form.>
+
+## What's inside
+
+- **Skills** (`skills/`, one `SKILL.md` each): <names, two or three
+  lines>.
+- **Agents** (`agents/`): <names and what each proposes>.
+- **Knowledge** (`knowledge/`): <what the local bundle holds, and the
+  provider bundle it depends on, by repository and bundle path>.
+- **Verification** (`verification/`): <the golden notebooks by name>.
+- **Evals** (`evals/`): <the cases, or the repository that is their
+  home>.
+
+## Configuration
+
+<The `<plugin-name>.local.md.template` file, where to copy it, what it
+controls; omit the section if the capability has no local file.>
+
+## Connectors and credentials
+
+<Two lines: what the connectors reach and which credential is read
+where.> The disclosure is [CONNECTORS.md](CONNECTORS.md).
+
+## Contributing
+
+Start with the marketplace repository's
+[CONTRIBUTING.md](https://github.com/open-science-pillars/marketplace/blob/main/CONTRIBUTING.md)
+and the guides under its `docs/` (contributing a skill, contributing
+knowledge, testing, the package authoring guide).
+
+## License and citation
+
+Apache-2.0. Cite via [CITATION.cff](CITATION.cff).
