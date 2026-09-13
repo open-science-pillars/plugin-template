@@ -60,11 +60,13 @@ falls back to the knowledge bundle with archive URLs and says out loud
 which path it used; loading proceeds from local files or direct
 library access.
 
-## Per-surface
+## Per runtime
 
-Claude Code and Cowork read `.mcp.json` from the installed plugin.
-Claude Science configures connectors per session; see
-marketplace/docs/surface-testing-guide.md.
+Claude Code and Cowork read `.mcp.json` from the installed plugin; on
+Cowork a stdio server runs on the user's computer with the user's
+permissions, so a server launched with `uv` needs `uv` reachable from
+the app. What each runtime consumes, and what a qualified record
+asserts, is in the marketplace repository's docs/runtime-distribution.md.
 
 ## Registered servers (per plugin: fill in)
 
