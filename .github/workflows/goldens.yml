@@ -1,12 +1,12 @@
 name: goldens
 # The golden notebooks (the golden-notebook requirement: one
-# fixture-backed asserting script per workflow skill) run headless on
-# every pull request and on main. They read only the committed fixtures
-# under verification/fixtures/ (provenance in its README), so the job
-# touches no live service, needs no credential and carries no secret;
-# a fixture refetch is a deliberate commit, not a CI side effect. The
-# glob is the contract the placement gate measures: every notebook at
-# the top of verification/ is run, and nothing under fixtures/ is.
+# fixture-backed asserting script per skill that runs a computation)
+# run headless on every pull request and on main. They read only what
+# is committed, the bundle's data root and any frozen input under
+# verification/fixtures/, so the job touches no live service, needs no
+# credential and carries no secret; a refetch is a deliberate commit,
+# not a CI side effect. The glob is the contract: every golden at the
+# top of verification/ is run, and nothing under fixtures/ is.
 on:
   pull_request:
   push:

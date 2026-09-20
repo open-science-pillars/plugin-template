@@ -2,22 +2,21 @@
 # requires-python = ">=3.11"
 # dependencies = [
 #     "marimo",
-#     "numpy",
 # ]
 # ///
-# The golden notebook of the example workflow: the pattern every workflow
-# skill copies. It runs headless (`uv run verification/example_workflow.py`)
+# The golden of the example computation: the pattern every skill with a
+# script copies. It runs headless (`uv run verification/example_workflow.py`)
 # and exits nonzero on assertion failure; .github/workflows/goldens.yml
 # runs every notebook at the top of verification/ on every pull request.
 #
-# It reads the frozen fixture under verification/fixtures/ (provenance in
-# the README there), runs the same computation the skill's helper script
-# runs (skills/example-workflow/scripts/example_helper.py, imported by
-# path), and asserts the expected value and its expected-uncertainty
-# range. A real notebook does the same with the skill's canonical
-# computation and the ranges its recipe concept records. The direction
-# matters (the placement rule, ADR C): a golden may import a skill's
-# script, and no skill ever names anything under verification/.
+# What proves a script is under verification/. This golden names both
+# scripts of the attested computation declared by
+# knowledge/computations/example-workflow.md and exercises the whole
+# contract: the executor on the committed data root, the attester on the
+# receipt it wrote, the refusal on a bound value outside its range, and
+# the attester once more on a receipt with one number changed, which must
+# fail. The direction is one way: a golden names a skill's scripts, and
+# no skill names anything under verification/.
 
 import marimo
 
@@ -27,71 +26,95 @@ app = marimo.App()
 
 @app.cell
 def _():
-    import csv
-    import importlib.util
+    import json
+    import subprocess
+    import sys
+    import tempfile
     from pathlib import Path
 
-    import numpy as np
-
-    return Path, csv, importlib, np
+    return Path, json, subprocess, sys, tempfile
 
 
 @app.cell
 def _(Path):
-    # Paths are resolved from this file, so the notebook runs from any
-    # working directory: the fixture beside it, the helper in its skill.
+    # Paths are resolved from this file, so the golden runs from any
+    # working directory.
     root = Path(__file__).resolve().parents[1]
-    fixture = root / "verification" / "fixtures" / "example_series.csv"
-    helper_path = root / "skills" / "example-workflow" / "scripts" / "example_helper.py"
-    assert fixture.is_file(), f"missing fixture {fixture}"
-    assert helper_path.is_file(), f"missing helper {helper_path}"
-    return fixture, helper_path
+    scripts = root / "skills" / "example-workflow" / "scripts"
+    executor = scripts / "example_executor.py"
+    attester = scripts / "example_attester.py"
+    concept = root / "knowledge" / "computations" / "example-workflow.md"
+    data_root = root / "knowledge" / "references" / "retrieval" / "example-series"
+    for required in (executor, attester, concept, data_root / "example_series.csv"):
+        assert required.exists(), f"missing {required}"
+    return attester, executor
 
 
 @app.cell
-def _(csv, fixture, np):
-    # Load the fixture. 48 monthly values near 1.0 (fixtures/README.md).
-    with fixture.open(newline="") as fh:
-        rows = list(csv.DictReader(fh))
-    series = np.array([float(r["value"]) for r in rows])
-    assert series.size == 48, f"expected 48 rows, read {series.size}"
-    assert rows[0]["month"] == "2020-01" and rows[-1]["month"] == "2023-12"
-    return (series,)
+def _(Path, subprocess, sys, tempfile):
+    def run(script: Path, *args: str):
+        """Run one of the computation's scripts the way a runtime would."""
+        return subprocess.run([sys.executable, str(script), *args], capture_output=True, text=True)
+
+    work = Path(tempfile.mkdtemp())
+    return run, work
 
 
 @app.cell
-def _(np, series):
-    # The computation this example skill encodes: a mean with a bootstrap
-    # confidence interval, the minimal shape of result-plus-uncertainty.
-    rng = np.random.default_rng(seed=7)
-    boot = np.array([
-        rng.choice(series, size=series.size, replace=True).mean()
-        for _ in range(500)
-    ])
-    lo, hi = np.percentile(boot, [2.5, 97.5])
-    mean = series.mean()
-
-    # Assertions are the gate: expected value AND its uncertainty range.
-    assert abs(mean - 1.0002) < 5e-4, f"mean {mean:.4f} is not the fixture's 1.0002"
-    assert lo < mean < hi, "mean must lie inside its own bootstrap CI"
-    assert 0.02 < (hi - lo) < 0.05, f"CI width {hi - lo:.4f} outside the expected 0.02 to 0.05"
-    return hi, lo, mean
+def _(executor, json, run, work):
+    # The executor on the committed data root: one receipt, exit 0.
+    receipt_path = work / "receipt.json"
+    done = run(executor, "--window", "48", "--runtime", "golden", "--out", str(receipt_path))
+    assert done.returncode == 0, f"executor failed: {done.stderr}"
+    receipt = json.loads(receipt_path.read_text())
+    for field in ("run_id", "code_sha256", "bound_parameters", "results"):
+        assert field in receipt, f"receipt is missing {field}"
+    assert receipt["bound_parameters"] == {"window": 48}
+    results = receipt["results"]
+    assert results["n"] == 48, f"expected 48 months, receipt says {results['n']}"
+    assert abs(results["mean"] - 1.0002) < 5e-4, f"mean {results['mean']:.4f} is not the series' 1.0002"
+    lo, hi = results["ci95"]
+    assert lo < results["mean"] < hi, "the mean must lie inside its own bootstrap interval"
+    assert 0.02 < hi - lo < 0.05, f"interval width {hi - lo:.4f} outside the expected 0.02 to 0.05"
+    return receipt, receipt_path, results
 
 
 @app.cell
-def _(fixture, helper_path, hi, importlib, lo, mean, series):
-    # The skill's helper runs the same workflow on the same fixture and
-    # must agree with the notebook: same count, same mean, and an
-    # interval of the same width to the tolerance a bootstrap allows.
-    spec = importlib.util.spec_from_file_location("example_helper", helper_path)
-    helper = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(helper)
-    summary = helper.summarize(helper.read_column(fixture))
-    assert summary["n"] == series.size
-    assert abs(summary["mean"] - mean) < 1e-9, f"helper mean {summary['mean']} differs from {mean}"
-    h_lo, h_hi = summary["ci95"]
-    assert abs((h_hi - h_lo) - (hi - lo)) < 0.01, "helper and notebook intervals disagree in width"
-    print(f"example workflow: n={summary['n']} mean={mean:.4f} CI {lo:.4f} to {hi:.4f}; helper agrees")
+def _(attester, receipt, receipt_path, run):
+    # The attester on that receipt: PASS, exit 0, every check reported.
+    attested = run(attester, str(receipt_path))
+    assert attested.returncode == 0, f"attester did not pass a good receipt:\n{attested.stdout}{attested.stderr}"
+    assert "PASS" in attested.stdout
+    for check in ("fields", "code", "parameter", "data", "recompute", "plausible"):
+        assert f"ok   {check}" in attested.stdout, f"the attester did not report {check}:\n{attested.stdout}"
+    print(f"attested run {receipt['run_id']}")
+    return
+
+
+@app.cell
+def _(executor, run, work):
+    # The refusal: a bound value outside the range the concept declares
+    # buys a reason code and exit 3, and writes no receipt.
+    refused_path = work / "refused.json"
+    refused = run(executor, "--window", "4", "--runtime", "golden", "--out", str(refused_path))
+    assert refused.returncode == 3, f"expected exit 3, got {refused.returncode}"
+    assert "window-out-of-range" in refused.stderr, refused.stderr
+    assert not refused_path.exists(), "a refusal must not write a receipt"
+    return
+
+
+@app.cell
+def _(attester, json, receipt, run, work):
+    # A receipt with one number changed must not attest: this is what
+    # makes the PASS above worth quoting.
+    tampered_path = work / "tampered.json"
+    tampered = json.loads(json.dumps(receipt))
+    tampered["results"]["mean"] += 0.01
+    tampered_path.write_text(json.dumps(tampered, indent=2))
+    verdict = run(attester, str(tampered_path))
+    assert verdict.returncode == 1, "the attester passed a tampered receipt"
+    assert "FAIL recompute" in verdict.stdout, verdict.stdout
+    print("example computation: executor, attester, refusal and tamper all behave")
     return
 
 

@@ -1,0 +1,17 @@
+{
+  "purpose": "provenance of the data root the template's attested computation reads: one synthetic monthly series, generated rather than retrieved",
+  "credentials": "none: nothing in this root is fetched from a service",
+  "files": [
+    {
+      "file": "example_series.csv",
+      "kind": "synthetic",
+      "license": "public domain (synthetic)",
+      "generator": "skills/example-workflow/scripts/example_executor.py --write-series",
+      "description": "48 monthly values from 2020-01 to 2023-12 near 1.0 with a small annual cycle and a slower modulation, closed form and rounded to four decimals, so the same bytes come out on every machine and the attester can regenerate them",
+      "rows": 48,
+      "columns": ["month", "value"],
+      "sha256": "sha256:e67f5cdbe44387282bb821f72ef98b28e51acc3654560ba757707c96a1f762e6"
+    }
+  ],
+  "note": "A data root is data, and data is knowledge: a capability whose computation reads retrieved granules keeps them, their stamps and their record files here in the same way. Nothing under knowledge/ is runnable; the code that reads this root is the executor in the skill that runs it."
+}
