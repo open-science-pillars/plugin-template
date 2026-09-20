@@ -13,9 +13,9 @@ keeps the shared text and says so there.
 
 ## What a connector is
 
-A connector is the REACH plane only: the registration wire
-(`.mcp.json`) that gives an agent an interactive path to an external
-service. Three rules keep it in its plane.
+A connector is the registration wire (`.mcp.json`) that gives an agent
+an interactive path to an external service, and nothing more. Three
+rules keep it to that.
 
 **Connector facts live in the bundle.** Endpoint, transport, tool
 surface, auth boundary and deprecation status are world-falsifiable

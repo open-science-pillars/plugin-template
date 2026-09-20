@@ -6,7 +6,7 @@ The walkthrough with measured timings is
 [Tutorial 3, Build a Domain Plugin](https://github.com/open-science-pillars/tutorials/blob/main/tutorial-3-build-a-plugin.qmd)
 in the tutorials repository (12.3 minutes scaffold-to-installed); what
 every file under `.osp/` means, and how a dependency, a connector or a
-PROVE requirement is declared, is the marketplace repository's
+qualification requirement is declared, is the marketplace repository's
 [package authoring guide](https://github.com/open-science-pillars/marketplace/blob/main/docs/package-authoring-guide.md).
 The words used on this page (capability, plugin, package, sphere,
 knowledge bundle, runtime) are defined in the
@@ -28,15 +28,18 @@ knowledge bundle, runtime) are defined in the
    the release tag pattern in `.github/workflows/plugin-gate.yml` to
    `<plugin-name>--v*`; and put the plugin's name at the top of
    `CONNECTORS.md`.
-3. **Delete the examples** once you have real ones: the example skill
-   with its helper script (`skills/example-workflow/`, including
-   `scripts/example_helper.py`), the two example agents
-   (`agents/example-scout/`, `agents/example-reviewer/`), the example
-   golden notebook (`verification/example_workflow.py`) and its fixture
-   (`verification/fixtures/example_series.csv` with the
-   `make_fixtures.py` that writes it; keep the fixtures README and
-   record your own fixtures in it). The knowledge
-   bundle starts empty (its concepts come from
+3. **Delete the examples** once you have real ones. The example
+   computation is one unit in three places: the skill with its two
+   scripts (`skills/example-workflow/`), the concept that declares the
+   contract and the data root the executor reads
+   (`knowledge/computations/example-workflow.md` and
+   `knowledge/references/retrieval/example-series/`), and the golden
+   that proves the scripts (`verification/example_workflow.py`).
+   Delete them together or replace them together; a concept whose
+   executor is gone fails the gate. Also delete the two example agents
+   (`agents/example-scout/`, `agents/example-reviewer/`). The rest of
+   the knowledge bundle starts empty (concepts of the other types come
+   from
    [knowledge-template](https://github.com/open-science-pillars/knowledge-template))
    and `evals/` holds only the pointer to the case schema; the first
    high-severity gotcha you write brings the first eval case with it.
@@ -51,18 +54,20 @@ knowledge bundle, runtime) are defined in the
    (`claude plugin validate`), the canonical metadata validates and the
    projections are current (`osp.py validate`, `osp.py render --check`),
    the portable package conforms to Agent Plugins 1.0.0
-   (`osp.py plugin-check`), every file of code has one home by plane
-   (`osp.py placement-check`, the placement rule of ADR C), the
-   README's runtime table is current and no
-   runtime is advertised without a qualified record (`osp.py advertise
-   --check`), the release lock is reported, the bundle conforms to OKF
+   (`osp.py plugin-check`), the README's runtime table is current and
+   no runtime is advertised without a qualified record
+   (`osp.py advertise --check`), the release lock is reported, the bundle conforms to OKF
    v0.2 (`check_okf_v02.py`), every script's PEP 723 header covers what
    it imports (`check_script_deps.py`), the wording rules hold
    (`check_prose.py`: specification rules cited by name, no program
    bookkeeping, no em or en dashes) and the signature debt is reported
    (`signature_check.py`); a release tag enforces the lock and zero
-   debt. `.github/workflows/goldens.yml` runs every golden notebook at
-   the top of `verification/` headless on the committed fixtures.
+   debt. `osp.py validate` is also what holds the placement of files:
+   runnable code under `knowledge/` is an error, and a computation
+   concept's executor and attester must resolve inside the package and
+   be named by a golden. `.github/workflows/goldens.yml` runs every
+   golden notebook at the top of `verification/` headless on what is
+   committed.
    `.github/workflows/release-qualification.yml` treats a pull
    request that changes the package version, or carries the `release`
    label, as a release candidate: one ticket opens per required runtime
@@ -89,26 +94,33 @@ your-plugin/
 │   └── release-qualification.yml # tickets per required runtime on a release candidate
 ├── README.md · LICENSE · CITATION.cff
 ├── CONNECTORS.md                 # network disclosure; shared text plus the per-plugin table
-├── skills/
-│   └── example-workflow/         # annotated example; replace it
-│       ├── SKILL.md              #   the procedure
-│       └── scripts/              #   what the procedure runs at runtime, through the plugin root
-│           └── example_helper.py #   PEP 723 header, --selftest
+├── skills/                       # what an agent runs, with its scripts beside it
+│   └── example-workflow/         # annotated example computation; replace it
+│       ├── SKILL.md              #   the run procedure: bind a value, attest, quote
+│       └── scripts/              #   invoked through ${CLAUDE_PLUGIN_ROOT}, never a relative path
+│           ├── example_executor.py  # binds the parameter, writes the receipt, refuses out of range
+│           └── example_attester.py  # rechecks a receipt with no language model in the path
 ├── agents/                       # subagents, one directory each
 │   ├── example-scout/agent.md    # read-only planner skeleton; replace it
 │   └── example-reviewer/agent.md # propose-never-modify auditor skeleton; replace it
-├── knowledge/                    # OKF bundle (start from knowledge-template)
-│   └── index.md · log.md
-├── verification/                 # marimo golden notebooks; nothing here is run by a skill
-│   ├── example_workflow.py       # green notebook on the fixture; the pattern to copy
-│   └── fixtures/                 # small fixed inputs plus the provenance README
-│       ├── README.md             #   source, version and license of every fixture
-│       ├── make_fixtures.py      #   the builder that writes the synthetic fixture
-│       └── example_series.csv    #   the fixture the golden and the helper read
+├── knowledge/                    # what a steward signs: knowledge and evidence, no runnable code
+│   ├── index.md · log.md         #   every concept listed; change history
+│   ├── computations/             #   one Attested Computation concept per computation
+│   │   └── example-workflow.md   #   names the executor, the receipt fields and the attester
+│   └── references/retrieval/     #   the data a computation reads, stamped, as data
+│       └── example-series/       #   example_series.csv and its SOURCES.json provenance stamp
+├── verification/                 # what proves a script; nothing here is run by a skill
+│   └── example_workflow.py       # the golden: executor, attester, refusal; the pattern to copy
 └── evals/                        # eval cases, added with your gotchas
     ├── README.md                 # what lives here and where the format is defined
     └── SCHEMA.md                 # pointer to the case schema's one home
 ```
+
+The example ships no `verification/fixtures/`, because the data its
+executor reads is the bundle's data root and the golden reads the same
+root. A golden that needs a frozen input of its own keeps it under
+`verification/fixtures/` and records its source, version and license in
+a README there (the fixture-provenance rule).
 
 ## The rules that gate a merge
 
@@ -120,29 +132,68 @@ your-plugin/
    runtimes).
 2. Side effects (downloads, file writes) are guarded by in-skill
    confirmation gates, in the skill body, so they work on every runtime.
-3. A workflow skill that encodes a computation is not done until its
-   golden notebook in `verification/` runs green headless
+3. A skill that runs a computation is not done until its golden in
+   `verification/` runs green headless
    (`uv run verification/your_workflow.py`, nonzero exit on failure;
    the PEP 723 header at the top of the file is what makes that resolve
-   on any machine). The notebook reads its inputs from
-   `verification/fixtures/` and may import the skill's helper by path;
-   the goldens workflow runs every notebook at the top of
-   `verification/`.
-4. Every file of code has one home by plane (the placement rule, ADR C
-   in the marketplace repository's docs/decisions): sanctioned code a
-   concept names stays in `knowledge/<bundle>/references/`, a procedure
-   is a `SKILL.md`, a script a skill runs at runtime is in
-   `skills/<name>/scripts/` and is invoked through
-   `${CLAUDE_PLUGIN_ROOT}`, a golden and its fixtures are under
-   `verification/` where no skill names them, and
-   `osp.py placement-check` in the gate reports the row a file breaks.
+   on any machine). The golden reads only what is committed, names the
+   skill's scripts and runs them; the goldens workflow runs every
+   golden at the top of `verification/`.
+4. Where files go is one sentence: what a steward signs is under
+   `knowledge/`, what an agent runs is under `skills/<name>/` with its
+   scripts beside it, what proves a script is under `verification/`,
+   and what reaches a service is under `connectors/`. Three
+   consequences the gate measures: nothing under `knowledge/` is
+   runnable, a script a skill runs is invoked through
+   `${CLAUDE_PLUGIN_ROOT}` and never by a path relative to the working
+   directory, and the direction between a skill and its golden is one
+   way, a golden names a skill's scripts and no skill names anything
+   under `verification/`.
 5. Knowledge bundles conform to the specification's knowledge-layer
-   rules (docs/SPECIFICATION.md in open-science-pillars/marketplace);
-   start from knowledge-template, which carries an annotated example per
-   concept type.
+   rules (docs/SPECIFICATION.md in open-science-pillars/marketplace):
+   knowledge and evidence, no runnable code. Start from
+   knowledge-template, which carries an annotated example of the
+   concept types a bundle holds.
 6. Every high-severity gotcha ships a matching eval case in `evals/`;
    the case format is the marketplace repository's
    [docs/testing.md](https://github.com/open-science-pillars/marketplace/blob/main/docs/testing.md).
+
+## The computation this template ships
+
+A computation is a skill. The example is the shape to copy: a concept,
+two scripts and a golden, in three places.
+
+- **The concept**, `knowledge/computations/example-workflow.md`, an
+  Attested Computation in OKF v0.2 shape: the runtime, the one
+  parameter a caller may bind and its range, the path of the executor,
+  the fields a receipt carries, the path of the attester, its sources
+  and `status: draft` until a steward signs it. Its `computation` and
+  `attester.resource` are paths relative to the concept and resolve to
+  the scripts in the skill beside it.
+- **The executor**,
+  `skills/example-workflow/scripts/example_executor.py`, which binds
+  the declared parameter, reads the data root, and writes a receipt
+  with a run identifier, the digest of its own file, the bound
+  parameters and the results. A value outside the declared range is
+  refused with a reason code and exit status 3, and writes no receipt.
+- **The attester**,
+  `skills/example-workflow/scripts/example_attester.py`, which takes a
+  receipt and returns a verdict with no language model in the path: it
+  hashes the executor, regenerates the data the executor read and
+  recomputes every number in the receipt, and exits nonzero on any
+  drift.
+- **The golden**, `verification/example_workflow.py`, which runs the
+  executor on the committed data root, the attester on the receipt it
+  wrote, the refusal on a value out of range, and the attester once
+  more on a receipt with one number changed, which must fail.
+
+The `SKILL.md` is the run procedure: bind values only, pass the name of
+the runtime, run the attester before quoting a number, and cite the
+concept by path. The data the executor reads is data, so it lives in
+the bundle under `knowledge/references/retrieval/` with a `SOURCES.json`
+stamp, not beside the code. A capability may group several
+computations into one skill when one workflow runs them together; the
+concepts stay one per computation.
 
 The sections below are the README your capability ships. Keep their
 order (it is the one every capability in the organization uses),
@@ -215,12 +266,14 @@ repository for the long form.>
 
 ## What's inside
 
-- **Skills** (`skills/`, one `SKILL.md` each, runtime helpers in its
-  `scripts/`): <names, two or three lines>.
+- **Skills** (`skills/`, one `SKILL.md` each, the scripts it runs in
+  its `scripts/`): <names, two or three lines>.
 - **Agents** (`agents/`): <names and what each proposes>.
-- **Knowledge** (`knowledge/`): <what the local bundle holds, and the
-  provider bundle it depends on, by repository and bundle path>.
-- **Verification** (`verification/`): <the golden notebooks by name>.
+- **Knowledge** (`knowledge/`): <what the local bundle holds, the
+  computations it declares under `computations/`, and the provider
+  bundle it depends on, by repository and bundle path>.
+- **Verification** (`verification/`): <the goldens by name, and which
+  script each proves>.
 - **Evals** (`evals/`): <the cases, or the repository that is their
   home>.
 
